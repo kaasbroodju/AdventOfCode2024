@@ -10,11 +10,12 @@ mod day_07;
 mod day_08;
 mod day_09;
 mod day_10;
+mod day_11;
 
 fn main() {
-    day_10::first_part();
+    day_11::first_part();
     // day_03::first_part_state_machine();
-    day_10::second_part();
+    day_11::second_part();
     // day_04::second_part_one_line();
     // day_04::second_part_one_line_simd();
     // day_03::second_part_state_machine();
