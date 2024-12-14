@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Instant;
 
 pub fn first_part() {
@@ -13,7 +13,7 @@ pub fn first_part() {
         .to_owned();
 
 
-    let mut grid: PlutoStonesV2<{ ROUNDS + 1 }> = PlutoStonesV2::new();
+    let mut grid: PlutoStones<{ ROUNDS + 1 }> = PlutoStones::new();
     let mut total = 0;
     for number in input {
         total += grid.get_amount_of_stones(number, ROUNDS);
@@ -26,15 +26,15 @@ pub fn first_part() {
 const AMOUNT_OF_BUCKET: usize = u8::MAX as usize;
 
 #[derive(Debug)]
-struct PlutoStonesV2<const ROUNDS: usize> {
-    already_calculated: [HashMap<usize, [Option<usize>; ROUNDS]>; AMOUNT_OF_BUCKET],
+struct PlutoStones<const ROUNDS: usize> {
+    cache: [BTreeMap<usize, [Option<usize>; ROUNDS]>; AMOUNT_OF_BUCKET],
 }
 
-impl<const ROUNDS_BUCKET: usize> PlutoStonesV2<ROUNDS_BUCKET> {
+impl<const ROUNDS_BUCKET: usize> PlutoStones<ROUNDS_BUCKET> {
     // Constructor for PlutoStonesV2
     fn new() -> Self {
         Self {
-            already_calculated: std::array::from_fn(|_| HashMap::new()),
+            cache: std::array::from_fn(|_| BTreeMap::new()),
         }
     }
 
@@ -43,7 +43,7 @@ impl<const ROUNDS_BUCKET: usize> PlutoStonesV2<ROUNDS_BUCKET> {
 
         let bucket = number % AMOUNT_OF_BUCKET;
 
-        let cached_value = self.already_calculated[bucket]
+        let cached_value = self.cache[bucket]
             .get(&number)
             .map_or_else(
                 || Err(()),
@@ -66,7 +66,7 @@ impl<const ROUNDS_BUCKET: usize> PlutoStonesV2<ROUNDS_BUCKET> {
                         } else {
                             self.get_amount_of_stones(number * 2024, round - 1)
                         };
-                        self.already_calculated[bucket].get_mut(&number).unwrap()[round] = Some(amount_of_stones);
+                        self.cache[bucket].get_mut(&number).unwrap()[round] = Some(amount_of_stones);
                         amount_of_stones
                     }
                 }
@@ -74,7 +74,7 @@ impl<const ROUNDS_BUCKET: usize> PlutoStonesV2<ROUNDS_BUCKET> {
             Err(_) => {
                 // If the number is not cached, initialize it
                 let grid = std::array::from_fn(|_| None);
-                self.already_calculated[bucket].insert(number, grid);
+                self.cache[bucket].insert(number, grid);
 
                 self.get_amount_of_stones(number, round)
             }
@@ -95,7 +95,7 @@ pub fn second_part() {
 
 
     let start = Instant::now();
-    let mut grid: PlutoStonesV2<{ ROUNDS + 1 }> = PlutoStonesV2::new();
+    let mut grid: PlutoStones<{ ROUNDS + 1 }> = PlutoStones::new();
     let mut total = 0;
     for number in input {
         total += grid.get_amount_of_stones(number, ROUNDS);
